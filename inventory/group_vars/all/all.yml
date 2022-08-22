@@ -1,0 +1,4 @@
+influxdb_user_name: telegraf
+influxdb_user_password: telegraf
+influxdb_admin_name: admin
+influxdb_admin_password: admin

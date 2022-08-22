@@ -1,0 +1,45 @@
+---
+
+- name: loki
+  hosts: test
+  become: true
+
+  tasks:
+
+    - name: Install packages
+      apt:
+        pkg: "{{ item }}"
+      loop:
+        - unzip
+
+    - name: Create User
+      user:
+        name: loki
+        comment: Ansible Created
+
+    - name: Create config dir
+      file:
+        path: /etc/loki
+        state: directory
+
+    - name: copy loki config
+      template:
+        src: files/loki.yml.j2
+        dest: /etc/loki/loki.yml
+
+    - name: copy unit file
+      copy:
+        src: files/loki.service
+        dest: /etc/systemd/system
+    
+    - name: Get loki from github
+      unarchive:
+        src: https://github.com/grafana/loki/releases/download/v2.6.1/loki-linux-amd64.zip
+        dest: /usr/local/bin
+        remote_src: yes
+
+    - name: start and enable loki
+      systemd:
+        name: loki
+        state: restarted
+        enabled: true

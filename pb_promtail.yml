@@ -1,0 +1,45 @@
+---
+
+- name: promtail
+  hosts: test
+  become: true
+
+  tasks:
+
+    - name: Install packages
+      apt:
+        pkg: "{{ item }}"
+      loop:
+        - unzip
+
+    - name: Create User
+      user:
+        name: promtail
+        comment: Ansible Created
+
+    - name: Create config dir
+      file:
+        path: /etc/promtail
+        state: directory
+
+    - name: copy promtail config
+      template:
+        src: files/promtail.yml.j2
+        dest: /etc/promtail/promtail.yml
+
+    - name: copy unit file
+      copy:
+        src: files/promtail.service
+        dest: /etc/systemd/system
+    
+    - name: Get promtail from github
+      unarchive:
+        src: https://github.com/grafana/loki/releases/download/v2.6.1/promtail-linux-amd64.zip
+        dest: /usr/local/bin
+        remote_src: yes
+
+    - name: start and enable promtail
+      systemd:
+        name: promtail
+        state: restarted
+        enabled: true
